@@ -130,12 +130,89 @@ def random_search(board):
 
 def hill_climbing(board):
     """
-    Implement this yourself.
-    :param board:
-    :return:
+    This function implements hill climbing with random restarts.
+    :param board: list/array representation of columns and the row of the queen on that column
+    :return: None
     """
-    pass
+    optimum = (len(board) - 1) * len(board) / 2
+    dead_ends = []
+    # the improvement: random restarts  in this list we track what pieces we have
+    # already tried and failed to find a better alternative for
 
+    
+    for i in range(1000): # try 1000 times, a bound I copied from the random_search
+        print('iteration ' + str(i) + ': evaluation = ' + str(evaluate_state(board)))
+
+        if evaluate_state(board) == optimum: # stop when an optimum has been found
+            break
+        
+        worst_queens = [(0, 0)]
+        # by definition 0 is the best it could be thus any imperfect queen will replace this
+        
+        for queen in range(0, len(board)):
+            if queen in dead_ends:
+                continue
+            
+            badness = 0
+            
+            for other_queen in range(0, len(board)):
+                if queen == other_queen:
+                    continue
+                
+                if in_conflict(queen, board[queen], other_queen, board[other_queen]):
+                    badness += 1
+
+            # determine whether this is worse or as bad as the current worst
+            if badness > worst_queens[0][1]:
+                worst_queens = [(queen, badness)]
+            elif badness == worst_queens[0][1]:
+                worst_queens.append((queen, badness))
+                
+        worst_queen = random.choice(worst_queens)
+
+        # do some variable renaming that makes future code easier
+        best_alternatives = [(board[worst_queen[0]], worst_queen[1])]
+        worst_queen, _ = worst_queen
+        current_location = board[worst_queen]
+        
+        for alternative in range(0, len(board)):
+            
+            badness = 0
+
+            for other_queen in range(0, len(board)):
+                if alternative == other_queen:
+                    continue
+                
+                if in_conflict(worst_queen, alternative, other_queen, board[other_queen]):
+                    badness += 1
+
+            # determine whether this is better or as good as the current best
+            if badness < best_alternatives[0][1]:
+                best_alternatives = [(alternative, badness)]
+            elif badness == best_alternatives[0][1]:
+                best_alternatives.append((alternative, badness))
+
+        best_alternatives = [x[0] for  x in best_alternatives]
+        
+        if current_location in best_alternatives:
+            # the best alternative is as bad as the current position => this is a dead end
+            dead_ends.append(worst_queen)
+
+            if len(dead_ends) == len(board):
+                # if we failed to find an alternative for all N states, we do a restart
+                print("Random restart")
+                for column, row in enumerate(board):  # For each column, place the queen in a random row
+                    board[column] = random.randint(0, len(board)-1)
+                    dead_ends = []
+        else:
+            board[worst_queen] = random.choice(best_alternatives)
+            dead_ends = [] # once a move is done, old dead ends might be new highways
+            
+    if evaluate_state(board) == optimum:
+        print('Solved puzzle!')
+
+    print('Final state is:')
+    print_board(board)
 
 def simulated_annealing(board):
     """
