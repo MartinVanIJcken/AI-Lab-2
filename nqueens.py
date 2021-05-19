@@ -214,13 +214,44 @@ def hill_climbing(board):
     print('Final state is:')
     print_board(board)
 
-def simulated_annealing(board):
+def _time_to_temperature(t):
+    return 2**(-t+2) # changed from linear to exponential now it works rather nicely
+    # this never quite reaches zero, but floating point errors take care of that problem :smiling_imp:
+
+def simulated_annealing(board, ttoT):
     """
-    Implement this yourself.
+    This function implements simulated annealing, every iteration it randomly moves one of the
+    queens to a random row in the same column
     :param board:
     :return:
     """
-    pass
+    optimum = (len(board) - 1) * len(board) / 2
+    
+    t = 0
+    T = ttoT(t)
+    
+    while t := t+1:
+        print(f"iteration {t}: evaluation = {evaluate_state(board)}, T={T}")
+
+        if (T := ttoT(t)) == 0: # or evaluate_state(board) == optimum unfortunately not present in the pseudocode, probably not allowed.
+            break
+
+        sucessor = board.copy()
+        sucessor[random.randint(0, len(board)-1)] = random.randint(0, len(board)-1)
+        
+        value_difference = evaluate_state(sucessor)-evaluate_state(board)
+
+        if value_difference > 0:
+            board = sucessor
+        else:
+            if random.random() < 2.71828**(value_difference/T):
+                board = sucessor
+
+    if evaluate_state(board) == optimum:
+        print('Solved puzzle!')
+
+    print('Final state is:')
+    print_board(board)
 
 
 def main():
@@ -263,7 +294,7 @@ def main():
     if algorithm == 2:
         hill_climbing(board)
     if algorithm == 3:
-        simulated_annealing(board)
+        simulated_annealing(board, _time_to_temperature)
 
 
 # This line is the starting point of the program.
