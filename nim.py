@@ -54,23 +54,18 @@ def minimax_decision(state, turn):
 
 	return best_move
 
-#def negamax(node, depth, utility):
-#    if node == 0:
-#        return utility
-#    if depth == 0:
-#        print('No result.')
-#        return 0
-#    value = -1e6
-#    for child in [node - n for n in range(1, min(node, 3)+1)]:
-#        value = max(value, negamax(child, depth - 1, -1*utility))
-#    print(node, value, depth, utility)
-#    return -value
+
+winners = [-1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1]
+
 def negamax(node, utility, current_depth, max_depth=50):
 	# utility = 1 means it's max's turn
 	utility = -utility
 	if node == 0:
-		#print(node, utility, current_depth)
 		return utility
+	if node <= len(winners) and utility == 1:
+		return winners[node-1]
+
+
 	
 	if current_depth == max_depth:
 		print('No result.')
@@ -121,17 +116,29 @@ def main():
 	except ValueError:
 		print('Usage: python nim.py NUMBER')
 		return False
+
+	print(negamax(state, -1, 0))
+
+	# find out who wins when and store the data in an array
+
+	#winners = []
+	#for i in range(25):
+	#	winners.append(negamax(i+1, -1, 0))
+
+	#print(winners)
 	
-	errors = 0
-	for state_num in range(1, state):
-		print('Starting amount: ' + str(state_num))
-		print(play_nim(state_num))
-		print(negamax(state_num, -1, 0))
-		print('\n')
+	# the below is for checking if our algorithm gives the same results as the algorithm from the TA's
 
-		errors += (play_nim(state_num) - negamax(state_num, -1, 0))**2
+	#errors = 0
+	#for state_num in range(1, state):
+	#	print('Starting amount: ' + str(state_num))
+	#	print(play_nim(state_num))
+	#	print(negamax(state_num, -1, 0))
+	#	print('\n')
 
-	print('\nTotal amount of errors: ' + str(errors))
+#		errors += (play_nim(state_num) - negamax(state_num, -1, 0))**2
+
+#	print('\nTotal amount of errors: ' + str(errors))
 
 
 if __name__ == '__main__':
