@@ -24,6 +24,7 @@ def in_conflict(column, row, other_column, other_row):
 	return False
 
 
+
 def in_conflict_with_another_queen(row, column, board):
 	"""
 	Checks if the given row and column correspond to a queen that is in conflict with another queen.
@@ -115,19 +116,15 @@ def random_search(board):
 
 	while evaluate_state(board) != optimum:
 		i += 1
-		print('iteration ' + str(i) + ': evaluation = ' + str(evaluate_state(board)))
+##              print('iteration ' + str(i) + ': evaluation = ' + str(evaluate_state(board)))
 		if i == 1000:  # Give up after 1000 tries.
 			break
 
 		for column, row in enumerate(board):  # For each column, place the queen in a random row
 			board[column] = random.randint(0, len(board)-1)
 
-	if evaluate_state(board) == optimum:
-		print('Solved puzzle!')
 
-	print('Final state is:')
-	print_board(board)
-
+	return board
 
 def hill_climbing(board):
 	"""
@@ -141,8 +138,8 @@ def hill_climbing(board):
 	# already tried and failed to find a better alternative for
 
 	
-	for i in range(1000): # try 1000 times, a bound I copied from the random_search
-		print('iteration ' + str(i) + ': evaluation = ' + str(evaluate_state(board)))
+	for i in range(10000):
+##              print('iteration ' + str(i) + ': evaluation = ' + str(evaluate_state(board)))
 
 		if evaluate_state(board) == optimum: # stop when an optimum has been found
 			break
@@ -199,25 +196,21 @@ def hill_climbing(board):
 			# the best alternative is as bad as the current position => this is a dead end
 			dead_ends.append(worst_queen)
 
-			if len(dead_ends) == len(board):
+			if len(dead_ends) > len(board)/4: # a cutoff point chosen based on best performance
 				# if we failed to find an alternative for all N states, we do a restart
-				print("Random restart")
+##              print("Random restart")
 				for column, row in enumerate(board):  # For each column, place the queen in a random row
 					board[column] = random.randint(0, len(board)-1)
 					dead_ends = []
 		else:
 			board[worst_queen] = random.choice(best_alternatives)
 			dead_ends = [] # once a move is done, old dead ends might be new highways
-			
-	if evaluate_state(board) == optimum:
-		print('Solved puzzle!')
 
-	print('Final state is:')
-	print_board(board)
+	return board
 
-def _time_to_temperature(t):
-	return 2**(-t+2) # changed from linear to exponential now it works rather nicely
-	# this never quite reaches zero, but floating point errors take care of that problem :smiling_imp:
+def _time_to_temperature(t, T0=1, decayrate=0.995):
+	return T0*decayrate**t # changed from linear to exponential now it works rather nicely
+##	return 1-0.0004*t
 
 def simulated_annealing(board, ttoT):
 	"""
@@ -231,11 +224,10 @@ def simulated_annealing(board, ttoT):
 	t = 0
 	T = ttoT(t)
 	
-	while t := t+1:
+	while (T := ttoT(t)) > 0.0001 and evaluate_state(board) != optimum:
 		print(f"iteration {t}: evaluation = {evaluate_state(board)}, T={T}")
+		t += 1
 
-		if (T := ttoT(t)) == 0: # or evaluate_state(board) == optimum unfortunately not present in the pseudocode, probably not allowed.
-			break
 
 		sucessor = board.copy()
 		sucessor[random.randint(0, len(board)-1)] = random.randint(0, len(board)-1)
@@ -248,11 +240,7 @@ def simulated_annealing(board, ttoT):
 			if random.random() < 2.71828**(value_difference/T):
 				board = sucessor
 
-	if evaluate_state(board) == optimum:
-		print('Solved puzzle!')
-
-	print('Final state is:')
-	print_board(board)
+	return board
 
 def random_selection(population, fitness_scores, order=2):
 	'''
@@ -277,6 +265,10 @@ def genetic_algorithm(boards, population_size):
 	Fitness function is the evaluate_board function.
 	'''
 	# set things up
+	print('Initial boards: \n')
+	for i in range(population_size):
+		print_board(boards[i])
+			
 	population = boards
 	n_queens = len(boards[0])
 	i=0
@@ -298,35 +290,36 @@ def genetic_algorithm(boards, population_size):
 			# create their child by splicing the lists
 			child = reproduce(x, y, math.floor(n_queens/2))
 			# small chance to mutate
-			if random.random()<mutation_prob:
-				child[random.randint(0, len(child)-1)]=random.randint(1, n_queens)
+			if random.random() < mutation_prob:
+				child[random.randint(0, len(child)-1)] = random.randint(1, n_queens)
 			# add child to the population
 			new_population.append(child)
 		population = new_population
 
 		if i == 10000:  # Give up after 10 000 tries.
-			print("Gave up.")
-			print_board(population[fitness_scores.index(max(fitness_scores))])
+##                      print("Gave up.")
+##                      print_board(population[fitness_scores.index(max(fitness_scores))])
 			break
 
-	if max(fitness_scores) == optimum:
-		print('Solved puzzle!')
+	return population[fitness_scores.index(max(fitness_scores))]
 
-	print('Final state is:')
-	print_board(population[fitness_scores.index(max(fitness_scores))])
-	print('\nWith fitness score: ' + str(max(fitness_scores)))
+def test(alg):
+	startingpoint = 4
+	cycles = 5
+	N = 10
+	results = []
+	for x in range(N):
+		tmp_results = 0
+		n_queens = startingpoint * (2 ** x)
+		optimum = n_queens * (n_queens-1)/2
 
-def test():
-    startingpoint = 4
-    cycles = 5
-    results = []
-    for x in range(0, cycles):
-        tmp_results = 0
-        for i in range(0, 10):
-            board = init_board(startingpoint * (2 ** x))
-            tmp_results += YOUR_ALGORITHM_HERE(board)
-        results.append(tmp_results / 10)
-    print(results)
+		for i in range(0, N):
+			board = init_board(n_queens)
+		
+			if evaluate_state(alg(board)) == optimum:
+				tmp_results += 1
+	
+		print(n_queens, tmp_results / N)
 
 def main():
 	"""
@@ -364,19 +357,26 @@ def main():
 		print_board(board)
 
 	if algorithm == 1:
-		random_search(board)
+		result = random_search(board)
 	elif algorithm == 2:
-		hill_climbing(board)
+		result = hill_climbing(board)
 	elif algorithm == 3:
-		simulated_annealing(board, _time_to_temperature)
+		result = simulated_annealing(board, _time_to_temperature)
 	elif algorithm == 4:
 		# because we start with multiple boards, we need to do this stuff
 		population_size = 8
 		boards = [init_board(n_queens) for i in range(population_size)]
-		print('Initial boards: \n')
-		for i in range(population_size):
-			print_board(boards[i])
-		genetic_algorithm(boards, population_size)
+		
+		result = genetic_algorithm(boards, population_size)
+
+	optimum = (n_queens - 1) * n_queens / 2
+	if evaluate_state(result) == optimum:
+		print('Solved puzzle!')
+
+	print('Final state is:')
+	print_board(board)
+
+		
 		
 
 # This line is the starting point of the program.
