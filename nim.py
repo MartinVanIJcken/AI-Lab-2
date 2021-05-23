@@ -55,30 +55,30 @@ def minimax_decision(state, turn):
 	return best_move
 
 
-winners = [-1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1]
-
+transposition_table = [1]+[0]*100
 def negamax(node, utility, current_depth, max_depth=50):
 	# utility = 1 means it's max's turn
 	utility = -utility
-	if node == 0:
-		return utility
-	if node <= len(winners) and utility == 1:
-		return winners[node-1]
+	if transposition_table[node] != 0:
+		return transposition_table[node]*utility
 
 
 	
 	if current_depth == max_depth:
 		print('No result.')
 		return 0
+	
 	value = -utility
-	for child in [node - n for n in range(1, min(node, 3)+1)]:
+	for child in [node - n for n in range(min(node, 3), 0, -1)]:
 		if child >= 0:
 			if utility == 1:
 				value = max(value, negamax(child, utility, current_depth + 1))
 			else:
 				value = min(value, negamax(child, utility, current_depth + 1))
 	#print(node, value, current_depth)
+	transposition_table[node] = value*utility
 	return value
+
 
 
 def play_nim(state):
