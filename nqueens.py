@@ -315,6 +315,17 @@ def genetic_algorithm(boards, population_size, mutation_prob=0.1):
 	print_board(population[fitness_scores.index(max(fitness_scores))])
 	print('\nWith fitness score: ' + str(max(fitness_scores)))
 
+def test():
+    startingpoint = 4
+    cycles = 5
+    results = []
+    for x in range(0, cycles):
+        tmp_results = 0
+        for i in range(0, 10):
+            board = init_board(startingpoint * (2 ** x))
+            tmp_results += YOUR_ALGORITHM_HERE(board)
+        results.append(tmp_results / 10)
+    print(results)
 
 def main():
 	"""
@@ -353,11 +364,11 @@ def main():
 
 	if algorithm == 1:
 		random_search(board)
-	if algorithm == 2:
+	elif algorithm == 2:
 		hill_climbing(board)
-	if algorithm == 3:
+	elif algorithm == 3:
 		simulated_annealing(board, _time_to_temperature)
-	if algorithm == 4:
+	elif algorithm == 4:
 		# because we start with multiple boards, we need to do this stuff
 		population_size = 8
 		boards = [init_board(n_queens) for i in range(population_size)]
@@ -365,7 +376,7 @@ def main():
 		for i in range(population_size):
 			print_board(boards[i])
 		genetic_algorithm(boards, population_size)
-
+		
 
 # This line is the starting point of the program.
 if __name__ == "__main__":
