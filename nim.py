@@ -54,6 +54,18 @@ def minimax_decision(state, turn):
 
     return best_move
 
+def negamax(node, depth, utility):
+    if node == 0:
+        return utility
+    if depth == 0:
+        print('No result.')
+        return 0
+    value = -1e6
+    for child in [node - n for n in range(1, min(node, 3)+1)]:
+        value = max(value, negamax(child, depth - 1, -1*utility))
+    print(node, value, depth, utility)
+    return -value
+
 
 def play_nim(state):
     turn = 0
