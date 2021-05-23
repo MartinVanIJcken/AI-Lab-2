@@ -242,23 +242,6 @@ def simulated_annealing(board, ttoT):
 
     return board
 
-def random_selection(population, fitness_scores, order=2):
-    '''
-    Randomly selects an element from a list based on the weights of
-    those elements. Higher order leads to weights mattering more.
-    '''
-    weighted_list = []
-    for i in range(len(population)):
-        for k in range(int(fitness_scores[i])**order):
-            weighted_list.append(population[i])
-    return random.choice(weighted_list)
-
-def reproduce(x, y, halfway_point):
-    '''
-    Makes a new list consisting of the first part of x and the last part of y,
-    using a given halfway point.
-    '''
-    return x[:halfway_point]+y[halfway_point:]
 
 def genetic_algorithm(boards, population_size):
     '''
@@ -267,11 +250,12 @@ def genetic_algorithm(boards, population_size):
     # set things up
     population = boards
     n_queens = len(boards[0])
+    halfway = n_queens//2
     i=0
     mutation_prob = 2**(-i/10)
     optimum = (n_queens - 1) * n_queens / 2
     fitness_scores = [evaluate_state(pop) for pop in population]
-
+    
     # run the loop
     while max(fitness_scores) != optimum:
         i += 1
@@ -282,12 +266,10 @@ def genetic_algorithm(boards, population_size):
         
         
         for n in range(population_size):
-            
             # select random elements from population with bias for fitness
-            x = random_selection(population, fitness_scores)
-            y = random_selection(population, fitness_scores)
+            x, y = random.choices(population, fitness_scores, k=2)
             # create their child by splicing the lists
-            child = reproduce(x, y, math.floor(n_queens/2))
+            child = x[:halfway]+y[halfway:]
             # small chance to mutate
             if random.random() < mutation_prob:
                 child[random.randint(0, len(child)-1)] = random.randint(1, n_queens)
