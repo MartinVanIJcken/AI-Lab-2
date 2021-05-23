@@ -280,7 +280,7 @@ def genetic_algorithm(boards, population_size):
 	population = boards
 	n_queens = len(boards[0])
 	i=0
-	mutation_prob = exp(-i/10)
+	mutation_prob = 2**(-i/10)
 	optimum = (n_queens - 1) * n_queens / 2
 	fitness_scores = [0]
 
